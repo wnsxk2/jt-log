@@ -84,12 +84,12 @@ export default function SignInPage() {
         <Link className="text-muted-foreground hover:underline" to={"/sign-up"}>
           계정이 없으시다면? 회원가입
         </Link>
-        <Link
+        {/* <Link
           className="text-muted-foreground hover:underline"
           to={"/forget-password"}
         >
           비밀번호를 잊으셨나요?
-        </Link>
+        </Link> */}
       </div>
     </div>
   );
