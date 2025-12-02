@@ -17,7 +17,7 @@ export default function ForgetPasswordPage() {
     },
     onError: (error) => {
       const message = generateErrorMessage(error);
-      toast.info(message, { position: "top-center" });
+      toast.info(error.message ?? message, { position: "top-center" });
       setEmail("");
     },
   });

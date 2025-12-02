@@ -26,7 +26,7 @@ export default function SignUpPage() {
     },
     onError: (error) => {
       const message = generateErrorMessage(error);
-      toast.error(message, { position: "top-center" });
+      toast.error(error.message ?? message, { position: "top-center" });
     },
   });
 

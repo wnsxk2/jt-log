@@ -16,8 +16,9 @@ export default function SignInPage() {
   const { mutate: signInWithPassword, isPending: isSignInWithPasswordPending } =
     useSignInWithPassword({
       onError: (error) => {
+        console.log(error);
         const message = generateErrorMessage(error);
-        toast.error(message, { position: "top-center" });
+        toast.error(error.message ?? message, { position: "top-center" });
         setPassword("");
       },
     });
@@ -25,7 +26,7 @@ export default function SignInPage() {
     useSignInWithOAuth({
       onError: (error) => {
         const message = generateErrorMessage(error);
-        toast.error(message, { position: "top-center" });
+        toast.error(error.message ?? message, { position: "top-center" });
       },
     });
 

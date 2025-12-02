@@ -75,7 +75,10 @@ async function handleTokenRefresh(): Promise<void> {
 
 export async function fetchApi<T>(
   endpoint: string,
-  options: RequestInit & { hasToken?: boolean; skipTokenRefresh?: boolean } = {},
+  options: RequestInit & {
+    hasToken?: boolean;
+    skipTokenRefresh?: boolean;
+  } = {},
 ): Promise<ApiResponse<T>> {
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -140,9 +143,7 @@ export async function fetchApi<T>(
         console.error("토큰 갱신 실패:", refreshError);
         // 갱신 실패 시 로그아웃 처리 또는 로그인 페이지로 리다이렉트
         // 여기서는 원래 에러를 그대로 throw
-        throw new Error(
-          `${body.error?.code || response.status} ${body.error?.message || response.statusText}`,
-        );
+        throw new Error(`${body.error?.message || response.statusText}`);
       }
     }
 
@@ -151,7 +152,7 @@ export async function fetchApi<T>(
       const errorCode = body.error?.code ?? response.status.toString();
       const errorMessage = body.error?.message ?? response.statusText;
 
-      throw new Error(`${errorCode} ${errorMessage}`);
+      throw new Error(errorMessage);
     }
 
     // 5. 성공 응답 처리
