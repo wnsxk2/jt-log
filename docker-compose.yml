@@ -1,6 +1,8 @@
 services:
   # 1. NestJS 앱 서비스
   backend:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     container_name: onebite-log-backend
     build:
       context: ./onebite-log-back
@@ -9,8 +11,6 @@ services:
       - "3000:3000"
     env_file:
       - .env
-    depends_on:
-      - db
     restart: always
     networks:
       - front-net
