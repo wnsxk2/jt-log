@@ -1,0 +1,39 @@
+services:
+  # 1. NestJS 앱 서비스
+  backend:
+    container_name: onebite-log-backend
+    build:
+      context: ./onebite-log-back
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    restart: always
+    networks:
+      - front-net
+
+  frontend:
+    container_name: onebite-log-frontend
+    build:
+      context: ./onebite-log-front
+      dockerfile: Dockerfile
+      args:
+        VITE_PUBLIC_URL: ${VITE_PUBLIC_URL}
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+        VITE_PUBLIC_API_URL: ${VITE_PUBLIC_API_URL}
+    ports:
+      - "80:80"
+    # 로컬 .env 파일에서 값을 읽어오기 위해 지정
+    depends_on:
+      - backend
+    env_file:
+      - .env
+    networks:
+      - front-net # 프론트와 대화용
+
+networks:
+  front-net:

@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  // provider = "prisma-client"
+  // output   = "../generated/prisma"
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Auth {
+  id         String   @id() @default(uuid())
+  userId     String   @unique @map("user_id")
+  email      String   @unique
+  password   String?
+  provider   String   @default("email")
+  providerId String   @map("provider_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@map("t_auth")
+}
+
+model Session {
+  id           String   @id() @default(uuid())
+  userId       String
+  refreshToken String   @unique @map("refresh_token")
+  // 메타데이터 (보안 감사용)
+  userAgent    String?  @map("user_agent") // 어떤 브라우저/기기로 접속했는지
+  clientIp     String?  @map("client_ip") // 어떤 IP에서 접속했는지
+  expiresAt    DateTime @map("expires_at") // 만료 시간 
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("t_sessions")
+}
+
+model User {
+  id        String   @id() @default(uuid())
+  nickname  String   @unique
+  bio       String   @default("")
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  posts    Post[]
+  likes    Like[]
+  comments Comment[]
+  auth     Auth?
+  sessions Session[]
+
+  @@map("t_users")
+}
+
+model Post {
+  id        Int      @id() @default(autoincrement())
+  content   String   @default("")
+  likeCount Int      @default(0) @map("like_count")
+  imageUrls String?  @map("image_urls")
+  authorId  String   @map("author_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likes    Like[]
+  comments Comment[]
+
+  @@index([authorId])
+  @@map("t_posts")
+}
+
+model Like {
+  id        Int      @id() @default(autoincrement())
+  postId    Int      @map("post_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("t_likes")
+}
+
+model Comment {
+  id              Int      @id() @default(autoincrement())
+  content         String   @default("")
+  postId          Int      @map("post_id")
+  authorId        String   @map("author_id")
+  rootCommentId   Int?     @map("root_comment_id")
+  parentCommentId Int?     @map("parent_comment_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user          User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post          Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  rootComment   Comment? @relation("RootToChildren", fields: [rootCommentId], references: [id], onDelete: Cascade)
+  parentComment Comment? @relation("ParentToChildren", fields: [parentCommentId], references: [id], onDelete: Cascade)
+
+  rootChildren   Comment[] @relation("RootToChildren") // 이 댓글을 루트로 삼는 댓글들
+  parentChildren Comment[] @relation("ParentToChildren")
+
+  @@index([postId]) // 게시글의 댓글 목록 조회 최적화
+  @@index([rootCommentId]) // 대댓글 조회 최적화
+  @@map("t_comments")
+}
